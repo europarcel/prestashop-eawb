@@ -7,7 +7,7 @@
  *}
 <div class="panel europarcel-settings">
     <div class="panel-heading">
-        <i class="icon-cogs"></i> {l s='EuroParcel Settings' mod='europarcel'}
+        <i class="icon-cogs"></i> {l s='eAWB Settings' mod='europarcel'}
     </div>
     <div class="panel-body">
         <form method="post" action="{$europarcel_form_action|escape:'html':'UTF-8'}">
@@ -50,7 +50,7 @@
         <i class="icon-info"></i> {l s='Carriers Information' mod='europarcel'}
     </div>
     <div class="panel-body">
-        <p><strong>{l s='EuroParcel Carrier ID:' mod='europarcel'}</strong> {$europarcel_home_carrier_id|intval}</p>
-        <p><strong>{l s='EuroParcel Locker Carrier ID:' mod='europarcel'}</strong> {$europarcel_locker_carrier_id|intval}</p>
+        <p><strong>{l s='eAWB Carrier ID:' mod='europarcel'}</strong> {$europarcel_home_carrier_id|intval}</p>
+        <p><strong>{l s='eAWB Locker Carrier ID:' mod='europarcel'}</strong> {$europarcel_locker_carrier_id|intval}</p>
     </div>
 </div>

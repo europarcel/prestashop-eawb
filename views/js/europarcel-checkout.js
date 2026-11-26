@@ -112,6 +112,17 @@
    */
   function showLocker(locker) {
     document.querySelectorAll('.europarcel-locker-selection').forEach((picker) => {
+      const network = JSON.parse(picker.dataset.networks || '{}')[locker.carrier_id];
+      const logo = picker.querySelector('.europarcel-locker-logo');
+
+      if (logo) {
+        logo.hidden = !network;
+
+        if (network) {
+          logo.src = network.logo;
+          logo.alt = network.name;
+        }
+      }
       picker.querySelector('.europarcel-locker-name').textContent = locker.name || '';
       picker.querySelector('.europarcel-locker-address').textContent = locker.address || '';
       picker.querySelector('.europarcel-locker-selected').hidden = false;

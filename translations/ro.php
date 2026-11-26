@@ -22,4 +22,4 @@ $_MODULE['<{europarcel}prestashop>order_confirmation_locker_831fac883a655bbdca0c
 $_MODULE['<{europarcel}prestashop>order_confirmation_locker_2bf1d5fae1c321d594fdedf05058f709'] = 'Adresă:';
 $_MODULE['<{europarcel}prestashop>order_confirmation_locker_8b9766fef7bb4daa523c0421b64ae7f9'] = 'Curier:';
 $_MODULE['<{europarcel}prestashop>order_confirmation_locker_8cb2297147634819332dae9ded85b4b3'] = 'Veți primi un cod pentru ridicarea pachetului din locker.';
-$_MODULE['<{europarcel}prestashop>europarcel_3a6b59d5f55283d1bfcf4061f1902a0b'] = 'Selectează un locker EuroParcel pentru a continua.';
+$_MODULE['<{europarcel}prestashop>europarcel_85c45950733868ba6e45c112a8be1633'] = 'Selectează un locker pentru a continua.';

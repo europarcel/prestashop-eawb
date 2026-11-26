@@ -1,10 +1,10 @@
-# EuroParcel - PrestaShop Shipping Module
+# eAWB - PrestaShop Shipping Module
 
-![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)
-![PrestaShop](https://img.shields.io/badge/PrestaShop-1.7%20%7C%208.x%20%7C%209.x-brightgreen.svg)
+![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)
+![PrestaShop](https://img.shields.io/badge/PrestaShop-1.7%20%7C%208.x%20%7C%209.2-brightgreen.svg)
 ![License](https://img.shields.io/badge/license-AFL--3.0-orange.svg)
 
-**EuroParcel** is a comprehensive shipping module for PrestaShop that integrates multiple Romanian courier services, offering both home delivery and locker pickup options for your customers.
+**eAWB** is a comprehensive shipping module for PrestaShop that integrates multiple Romanian courier services, offering both home delivery and locker pickup options for your customers.
 
 ---
 
@@ -37,7 +37,7 @@
 - Automatic carrier ID mapping
 
 ### Interactive Locker Selection
-- **Real-time locker map** powered by EuroParcel Maps API
+- **Real-time locker map** powered by eAWB Maps API
 - Location-based locker search
 - Filter by carrier/locker type
 - Customer address auto-population
@@ -83,12 +83,12 @@
 ## 📦 Requirements
 
 ### PrestaShop Version
-- **Minimum**: PrestaShop 1.7.0 (the EuroParcel panel on the back office order page needs 1.7.7 or later)
-- **Maximum**: PrestaShop 9.x
+- **Minimum**: PrestaShop 1.7.0 (the eAWB panel on the back office order page needs 1.7.7 or later)
+- **Tested up to**: PrestaShop 9.2.1 (latest release, 2026-11-09) and 8.2.9
 - **Recommended**: PrestaShop 8.x or 9.x
 
 ### Server Requirements
-- **PHP**: 7.1 or higher (7.4+ recommended; PrestaShop 9 itself needs PHP 8.1+)
+- **PHP**: 7.1 or higher (7.4+ recommended; PrestaShop 9.2 itself needs PHP 8.1 to 8.5)
 - **MySQL**: 5.6+ or MariaDB 10.0+
 - **PHP Extensions**:
   - `json` (for data handling)
@@ -129,7 +129,7 @@
 
 4. **Install via Back Office**
    - Go to: **Modules > Module Manager**
-   - Search for "EuroParcel"
+   - Search for "eAWB"
    - Click **Install**
    - Click **Configure**
 
@@ -148,7 +148,7 @@
 ### Post-Installation
 
 After installation, the module will:
-- ✅ Create two carriers: "EuroParcel - Home Delivery" and "EuroParcel Locker Delivery"
+- ✅ Create two carriers: "eAWB - Home Delivery" and "eAWB Locker Delivery"
 - ✅ Add custom fields to `orders` table (locker_id, carrier_id, service_id)
 - ✅ Add custom field to `customer` table (locker preference)
 - ✅ Register necessary hooks
@@ -161,14 +161,14 @@ After installation, the module will:
 ### Access Configuration
 
 1. Go to **Modules > Module Manager**
-2. Search for "EuroParcel"
+2. Search for "eAWB"
 3. Click **Configure**
 
 ### Settings
 
 #### 1. Default Home Delivery Carrier
 
-Select which carrier should be used when customers choose the "EuroParcel" (home delivery) option:
+Select which carrier should be used when customers choose the "eAWB" (home delivery) option:
 
 - Cargus National (default)
 - DPD Standard
@@ -193,8 +193,8 @@ Check the locker types you want to offer to your customers:
 #### 3. Carrier IDs (Information Only)
 
 The configuration page displays:
-- EuroParcel Carrier ID
-- EuroParcel Locker Carrier ID
+- eAWB Carrier ID
+- eAWB Locker Carrier ID
 
 These are auto-generated during installation and are used internally.
 
@@ -203,7 +203,7 @@ These are auto-generated during installation and are used internally.
 After installation, configure the carriers in PrestaShop:
 
 1. Go to **Shipping > Carriers**
-2. Find "EuroParcel - Home Delivery" and "EuroParcel Locker Delivery"
+2. Find "eAWB - Home Delivery" and "eAWB Locker Delivery"
 3. Configure:
    - **Shipping zones**: Enable for your zones (usually Romania)
    - **Price ranges**: Set shipping costs by price or weight
@@ -221,7 +221,7 @@ After installation, configure the carriers in PrestaShop:
 When a customer selects a locker, the order will show:
 
 1. **In Order Details**:
-   - Carrier: "EuroParcel Locker Delivery"
+   - Carrier: "eAWB Locker Delivery"
    - Locker information displayed in order panel
    - Locker ID stored in database
 
@@ -302,6 +302,7 @@ The module uses these hooks:
 - `actionValidateStepComplete`: Validate locker selection before proceeding
 - `actionValidateOrder`: Save locker data to order
 - `displayOrderConfirmation`: Show selected locker on confirmation page
+- `displayOrderDetail`: Show the order's locker on the customer's order details and guest tracking pages
 - `displayAdminOrderMain`: Show locker info in admin order page
 - `actionCarrierUpdate`: Update carrier IDs on carrier update
 
@@ -314,8 +315,8 @@ The module uses these hooks:
 #### Step 1: Select Shipping Method
 
 Customer sees two options:
-- **EuroParcel - Home Delivery** - Delivery to address (24-48 hours)
-- **EuroParcel Locker Delivery** - Delivery to locker (next day)
+- **eAWB - Home Delivery** - Delivery to address (24-48 hours)
+- **eAWB Locker Delivery** - Delivery to locker (next day)
 
 #### Step 2: Select Locker (if Locker option chosen)
 
@@ -336,7 +337,7 @@ Customer sees two options:
 
 #### Step 4: Order Confirmation
 
-- Selected locker details shown on confirmation page
+- Selected locker, with its network logo (easybox, FANbox, DPD, Cargus Ship & Go), shown on the confirmation page and in the customer's order details
 - Customer can see locker address and pickup instructions
 
 ### Customer Convenience Features
@@ -359,7 +360,7 @@ europarcel_locker_id INT UNSIGNED NULL DEFAULT NULL
   -- Stores the ID of selected locker (for locker deliveries)
   
 europarcel_carrier_id INT UNSIGNED NULL DEFAULT NULL
-  -- Stores the carrier ID (1-6) from EuroParcel system
+  -- Stores the carrier ID (1-6) from eAWB system
   
 europarcel_service_id INT UNSIGNED NULL DEFAULT NULL
   -- 1 = Home delivery, 2 = Locker delivery
@@ -406,7 +407,8 @@ europarcel/
 │
 ├── upgrade/
 │   ├── index.php
-│   └── upgrade-2.0.0.php       # Puts the new logo on carriers created by earlier versions
+│   ├── upgrade-2.0.0.php       # Puts the new logo on carriers created by earlier versions
+│   └── upgrade-2.1.0.php       # eAWB carrier names and logo, locker on the order details page
 │
 └── views/
     ├── index.php
@@ -420,6 +422,7 @@ europarcel/
     │   ├── cargus.webp         # Cargus logo
     │   ├── cargus-ship-go.webp # Cargus Ship&Go logo
     │   ├── dpd.webp            # DPD logo
+    │   ├── eawb-logo.svg       # eAWB logo (admin order page)
     │   ├── easybox.webp        # EasyBox locker logo
     │   ├── fan-courier.webp    # Fan Courier logo
     │   ├── fanbox.webp         # FANbox locker logo
@@ -440,14 +443,14 @@ europarcel/
             ├── index.php
             ├── carrier_extra_content.tpl         # Locker selection UI
             ├── displayAdminOrder.tpl             # Admin order info
-            └── order_confirmation_locker.tpl     # Confirmation page
+            └── order_confirmation_locker.tpl     # Locker on the confirmation and order details pages
 ```
 
 ### API Integration
 
-**EuroParcel Maps API**: `https://maps.europarcel.com`
+**eAWB Maps API**: `https://maps.europarcel.com`
 
-The module integrates with EuroParcel's hosted map service:
+The module integrates with eAWB's hosted map service:
 
 **Request Parameters**:
 - `country_code`: Always 'RO' (Romania)
@@ -553,7 +556,7 @@ ALTER TABLE `ps_customer`
 
 #### 5. Carriers Not Showing in Checkout
 
-**Symptoms**: EuroParcel carriers don't appear
+**Symptoms**: eAWB carriers don't appear
 
 **Solutions**:
 - Check carrier is enabled: Shipping > Carriers
@@ -588,7 +591,7 @@ If issues persist:
    -- Check carriers
    SELECT id_carrier, name, deleted, active 
    FROM ps_carrier 
-   WHERE name LIKE '%EuroParcel%';
+   WHERE external_module_name = 'europarcel';
    ```
 
 3. **Test AJAX Endpoint**:
@@ -602,7 +605,7 @@ If issues persist:
 ### Standard Uninstall
 
 1. Go to **Modules > Module Manager**
-2. Search for "EuroParcel"
+2. Search for "eAWB"
 3. Click **Uninstall**
 
 **What happens**:
@@ -685,6 +688,21 @@ Full license text: http://opensource.org/licenses/afl-3.0.php
 ---
 
 ## 📊 Changelog
+
+### Version 2.1.0 (2026-11-26)
+
+**Compatibility**:
+- ✅ Tested up to PrestaShop 9.2.1 (PHP 8.1 to 8.5) and 8.2.9
+
+**Enhancements**:
+- 🎨 EuroParcel is now eAWB: module name, author, new eAWB logo, and the carrier names "eAWB - Home Delivery" and "eAWB Locker Delivery"
+- Shops updating from an earlier version get the new name and logo on their carriers too; a carrier name or logo the merchant changed is kept
+- ✨ The chosen locker shows its network logo (easybox, FANbox, DPD, Cargus Ship & Go) in the checkout, on the order confirmation page, in the customer's order details and on the back office order page
+- ✨ The customer's order details and guest tracking pages show the order's locker
+
+**Bug Fixes**:
+- 🐛 A locker of a network the merchant no longer offers is no longer reused at checkout; the customer picks a new one
+- 🐛 The order confirmation page shows the locker after a reload too
 
 ### Version 2.0.0 (2026-10-23)
 

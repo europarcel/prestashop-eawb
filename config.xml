@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <module>
     <name>europarcel</name>
-    <displayName><![CDATA[EuroParcel]]></displayName>
-    <version><![CDATA[2.0.0]]></version>
-    <description><![CDATA[Create and manage the EuroParcel carrier for home delivery and locker pickup]]></description>
-    <author><![CDATA[EuroParcel]]></author>
+    <displayName><![CDATA[eAWB]]></displayName>
+    <version><![CDATA[2.1.0]]></version>
+    <description><![CDATA[Create and manage the eAWB carriers for home delivery and locker pickup]]></description>
+    <author><![CDATA[eAWB]]></author>
     <tab><![CDATA[shipping_logistics]]></tab>
     <url><![CDATA[https://www.eawb.ro]]></url>
     <confirmUninstall><![CDATA[Are you sure you want to uninstall?]]></confirmUninstall>

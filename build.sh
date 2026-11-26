@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# EuroParcel Plugin Build Script
+# eAWB Plugin Build Script
 # Creates a clean distribution zip file on the Desktop
 
 # Stop at the first failed step, and run from the module folder wherever the script is called from
@@ -9,7 +9,7 @@ cd "$(dirname "$0")"
 
 # Set variables
 MODULE_NAME="europarcel"
-VERSION="2.0.0"
+VERSION="2.1.0"
 DESKTOP_PATH="$HOME/Desktop"
 OUTPUT_ZIP="${DESKTOP_PATH}/${MODULE_NAME}.zip"
 TEMP_DIR="/tmp/${MODULE_NAME}_build"

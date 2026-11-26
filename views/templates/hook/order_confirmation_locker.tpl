@@ -8,9 +8,16 @@
 <div class="europarcel-order-confirmation">
     <div class="alert alert-info">
         <h4>{l s='Locker information' mod='europarcel'}</h4>
-        <p><strong>{l s='Selected locker:' mod='europarcel'}</strong> {$europarcel_locker.name|escape:'html':'UTF-8'}</p>
-        <p><strong>{l s='Address:' mod='europarcel'}</strong> {$europarcel_locker.address|escape:'html':'UTF-8'}</p>
-        <p><strong>{l s='Courier:' mod='europarcel'}</strong> {$europarcel_locker.carrier_name|escape:'html':'UTF-8'}</p>
+        {if $europarcel_locker_network}
+            <img class="europarcel-locker-logo" src="{$europarcel_locker_network.logo|escape:'html':'UTF-8'}" width="80" height="40" alt="{$europarcel_locker_network.name|escape:'html':'UTF-8'}">
+        {/if}
+        {if $europarcel_locker.name}
+            <p><strong>{l s='Selected locker:' mod='europarcel'}</strong> {$europarcel_locker.name|escape:'html':'UTF-8'}</p>
+            <p><strong>{l s='Address:' mod='europarcel'}</strong> {$europarcel_locker.address|escape:'html':'UTF-8'}</p>
+        {/if}
+        {if $europarcel_locker.carrier_name}
+            <p><strong>{l s='Courier:' mod='europarcel'}</strong> {$europarcel_locker.carrier_name|escape:'html':'UTF-8'}</p>
+        {/if}
         <p class="small">{l s='You will receive a code to pick up the parcel from the locker.' mod='europarcel'}</p>
     </div>
 </div>
