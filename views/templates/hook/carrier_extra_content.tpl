@@ -12,13 +12,13 @@
      data-city="{$europarcel_city|escape:'html':'UTF-8'}"
      data-county="{$europarcel_county|escape:'html':'UTF-8'}"
      data-couriers="{$europarcel_courier_ids|escape:'html':'UTF-8'}"
+     data-networks="{$europarcel_networks|escape:'html':'UTF-8'}"
      data-map-title="{l s='Choose locker' mod='europarcel'}"
      data-close-label="{l s='Close' mod='europarcel'}">
     <div class="alert alert-success mb-2 europarcel-locker-selected"{if !$europarcel_locker} hidden{/if}>
-        <p class="mb-1">
-            <strong>{l s='Selected locker:' mod='europarcel'}</strong>
-            <span class="europarcel-locker-name">{if $europarcel_locker}{$europarcel_locker.name|escape:'html':'UTF-8'}{/if}</span>
-        </p>
+        <img class="europarcel-locker-logo" width="80" height="40"
+             {if $europarcel_locker_network}src="{$europarcel_locker_network.logo|escape:'html':'UTF-8'}" alt="{$europarcel_locker_network.name|escape:'html':'UTF-8'}"{else}alt="" hidden{/if}>
+        <p class="mb-1 europarcel-locker-name">{if $europarcel_locker}{$europarcel_locker.name|escape:'html':'UTF-8'}{/if}</p>
         <p class="mb-1 europarcel-locker-address">{if $europarcel_locker}{$europarcel_locker.address|escape:'html':'UTF-8'}{/if}</p>
         <button type="button" class="btn btn-sm btn-primary europarcel-change-locker">
             {l s='Change locker' mod='europarcel'}

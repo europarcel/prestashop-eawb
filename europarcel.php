@@ -7,7 +7,7 @@
  * @copyright Copyright (c) 2025 EuroParcel
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *
- * @version   2.0.0
+ * @version   2.5.0
  */
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -49,6 +49,7 @@ class EuroParcel extends Module
         'actionValidateOrder',
         'displayOrderConfirmation',
         'displayAdminOrderMain',
+        'displayOrderDetail',
         'actionCarrierUpdate',
     ];
 
@@ -57,7 +58,7 @@ class EuroParcel extends Module
      */
     private const CARRIERS = [
         self::CONFIG_HOME_CARRIER_ID => [
-            'name' => 'EuroParcel - Home Delivery',
+            'name' => 'eAWB - Home Delivery',
             'delay' => 'Delivery in 24-48 hours',
             'grade' => 0,
             'max_width' => 0,
@@ -66,7 +67,7 @@ class EuroParcel extends Module
             'max_weight' => 50,
         ],
         self::CONFIG_LOCKER_CARRIER_ID => [
-            'name' => 'EuroParcel Locker Delivery',
+            'name' => 'eAWB Locker Delivery',
             'delay' => 'Next day delivery',
             'grade' => 9,
             'max_width' => 60,
@@ -95,20 +96,30 @@ class EuroParcel extends Module
 
     private const DEFAULT_HOME_SERVICE = 'cargus_national';
 
+    /**
+     * Locker network shown next to a locker, by EuroParcel courier id.
+     */
+    private const LOCKER_NETWORKS = [
+        1 => ['name' => 'Cargus Ship & Go', 'logo' => 'cargus-ship-go.webp'],
+        2 => ['name' => 'DPD', 'logo' => 'dpd.webp'],
+        3 => ['name' => 'FANbox', 'logo' => 'fanbox.webp'],
+        6 => ['name' => 'easybox', 'logo' => 'easybox.webp'],
+    ];
+
     public function __construct()
     {
         $this->name = 'europarcel';
         $this->tab = 'shipping_logistics';
-        $this->version = '2.0.0';
-        $this->author = 'EuroParcel';
+        $this->version = '2.5.0';
+        $this->author = 'eAWB';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = ['min' => '1.7', 'max' => '9.99.99'];
         $this->bootstrap = true;
 
         parent::__construct();
 
-        $this->displayName = $this->l('EuroParcel');
-        $this->description = $this->l('Create and manage the EuroParcel carrier for home delivery and locker pickup');
+        $this->displayName = $this->l('eAWB');
+        $this->description = $this->l('Create and manage the eAWB carriers for home delivery and locker pickup');
         $this->confirmUninstall = $this->l('Are you sure you want to uninstall?');
 
         if ($this->id && !Configuration::get(self::CONFIG_HOME_CARRIER_ID)) {
@@ -183,8 +194,12 @@ class EuroParcel extends Module
         $address = new Address((int) $this->context->cart->id_address_delivery);
         $state = new State((int) $address->id_state);
 
+        $locker = $this->getUsableLocker();
+
         $this->smarty->assign([
-            'europarcel_locker' => $this->getUsableLocker(),
+            'europarcel_locker' => $locker,
+            'europarcel_locker_network' => $locker ? $this->getLockerNetwork($locker['carrier_id']) : null,
+            'europarcel_networks' => json_encode($this->getLockerNetworks()),
             'europarcel_city' => (string) $address->city,
             'europarcel_county' => (string) $state->iso_code,
             'europarcel_courier_ids' => implode(',', $this->getLockerCourierIds()),
@@ -210,7 +225,7 @@ class EuroParcel extends Module
         if (!$locker) {
             // 'completed' is a reference to the checkout step's state.
             $params['completed'] = false;
-            $this->context->controller->errors[] = $this->l('Please select a EuroParcel locker before proceeding.');
+            $this->context->controller->errors[] = $this->l('Please select a locker before proceeding.');
 
             return;
         }
@@ -242,7 +257,7 @@ class EuroParcel extends Module
 
             if (!$locker) {
                 PrestaShopLogger::addLog(
-                    sprintf('EuroParcel: locker order %d was placed without a locker.', (int) $order->id),
+                    sprintf('eAWB: locker order %d was placed without a locker.', (int) $order->id),
                     3,
                     null,
                     'Order',
@@ -262,7 +277,7 @@ class EuroParcel extends Module
     }
 
     /**
-     * Show the picked locker on the order confirmation page, then end the checkout's locker selection.
+     * Show the order's locker on the order confirmation page, then end the checkout's locker selection.
      *
      * @param array<string, mixed> $params
      *
@@ -270,16 +285,21 @@ class EuroParcel extends Module
      */
     public function hookDisplayOrderConfirmation(array $params)
     {
-        $locker = $this->getSelectedLockerFromSession();
         $this->clearLockerFromSession();
 
-        if (!$locker || !isset($params['order']) || !$this->isLockerCarrier($params['order']->id_carrier)) {
-            return '';
-        }
+        return isset($params['order']) ? $this->displayOrderLocker($params['order']) : '';
+    }
 
-        $this->smarty->assign(['europarcel_locker' => $locker]);
-
-        return $this->display(__FILE__, 'order_confirmation_locker.tpl');
+    /**
+     * Show the order's locker on the customer's order details and guest tracking pages.
+     *
+     * @param array<string, mixed> $params
+     *
+     * @return string
+     */
+    public function hookDisplayOrderDetail(array $params)
+    {
+        return isset($params['order']) ? $this->displayOrderLocker($params['order']) : '';
     }
 
     /**
@@ -328,7 +348,12 @@ class EuroParcel extends Module
             $serviceId = $isLockerOrder ? self::SERVICE_LOCKER : self::SERVICE_HOME;
         }
 
+        $locker = $this->getOrderLocker($order);
+
         $this->smarty->assign([
+            'europarcel_logo' => $this->_path . 'views/img/eawb-logo.svg',
+            'europarcel_locker' => $locker,
+            'europarcel_locker_network' => $locker ? $this->getLockerNetwork($locker['carrier_id']) : null,
             'europarcel_courier' => $this->getServiceLabel($data['europarcel_carrier_id'], $serviceId),
             'europarcel_is_locker_service' => $serviceId === self::SERVICE_LOCKER,
             'europarcel_locker_id' => (int) $data['europarcel_locker_id'],
@@ -364,7 +389,7 @@ class EuroParcel extends Module
     {
         $locker = $this->normalizeLocker($data);
 
-        if (!$locker) {
+        if (!$locker || !$this->isOfferedLocker($locker)) {
             return false;
         }
 
@@ -811,12 +836,13 @@ class EuroParcel extends Module
         $idCustomer = (int) $this->context->customer->id;
 
         if ($locker || !$idCustomer) {
-            return $locker;
+            return $locker && $this->isOfferedLocker($locker) ? $locker : null;
         }
 
         $locker = $this->getCustomerLocker($idCustomer);
 
-        if (!$locker) {
+        // A locker of a network the merchant no longer offers is kept, in case the network comes back.
+        if (!$locker || !$this->isOfferedLocker($locker)) {
             return null;
         }
 
@@ -842,6 +868,31 @@ class EuroParcel extends Module
      */
     private function lockerIsGone($lockerId)
     {
+        $status = $this->requestFixedLocation($lockerId)['status'];
+
+        // 404: unknown or out-of-service locker; 400: an id no locker can have
+        return $status === 404 || $status === 400;
+    }
+
+    /**
+     * @param int $lockerId
+     *
+     * @return Locker|null The locker as EuroParcel describes it, or null when EuroParcel cannot tell
+     */
+    private function fetchLocker($lockerId)
+    {
+        $response = $this->requestFixedLocation($lockerId);
+
+        return $response['status'] === 200 ? $this->normalizeLocker(json_decode($response['body'], true)) : null;
+    }
+
+    /**
+     * @param int $lockerId
+     *
+     * @return array{status: int, body: string} HTTP status (0 when EuroParcel cannot be reached) and body
+     */
+    private function requestFixedLocation($lockerId)
+    {
         $curl = curl_init(self::FIXED_LOCATION_URL . (int) $lockerId);
         curl_setopt_array($curl, [
             CURLOPT_RETURNTRANSFER => true,
@@ -850,11 +901,100 @@ class EuroParcel extends Module
             CURLOPT_HTTPHEADER => ['Accept: application/json'],
             CURLOPT_USERAGENT => 'EuroParcel-PrestaShop/' . $this->version,
         ]);
-        curl_exec($curl);
-        $status = (int) curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        $body = curl_exec($curl);
 
-        // 404: unknown or out-of-service locker; 400: an id no locker can have
-        return $status === 404 || $status === 400;
+        return ['status' => (int) curl_getinfo($curl, CURLINFO_HTTP_CODE), 'body' => is_string($body) ? $body : ''];
+    }
+
+    /**
+     * Name and address come from the customer's saved locker when it is the order's, else from EuroParcel.
+     *
+     * @param Order $order
+     *
+     * @return Locker|null The order's locker, or null for an order without one
+     */
+    private function getOrderLocker(Order $order)
+    {
+        $data = $this->getOrderServiceData($order->id);
+        $lockerId = (int) $data['europarcel_locker_id'];
+
+        if (!$lockerId) {
+            return null;
+        }
+
+        $locker = $this->getCustomerLocker($order->id_customer);
+
+        if ($locker && $locker['id'] === $lockerId) {
+            return $locker;
+        }
+
+        return $this->fetchLocker($lockerId)
+            ?: $this->normalizeLocker(['id' => $lockerId, 'carrier_id' => $data['europarcel_carrier_id']]);
+    }
+
+    /**
+     * @param mixed $order
+     *
+     * @return string The order's locker with its network logo, or an empty string
+     */
+    private function displayOrderLocker($order)
+    {
+        $locker = $order instanceof Order && Validate::isLoadedObject($order) ? $this->getOrderLocker($order) : null;
+
+        if (!$locker) {
+            return '';
+        }
+
+        $this->smarty->assign([
+            'europarcel_locker' => $locker,
+            'europarcel_locker_network' => $this->getLockerNetwork($locker['carrier_id']),
+        ]);
+
+        return $this->display(__FILE__, 'order_confirmation_locker.tpl');
+    }
+
+    /**
+     * With no locker network picked in the settings, the map offers them all.
+     *
+     * @param Locker $locker
+     *
+     * @return bool Whether the locker belongs to a network offered to customers
+     */
+    private function isOfferedLocker(array $locker)
+    {
+        $courierIds = $this->getLockerCourierIds();
+
+        return !$courierIds || in_array($locker['carrier_id'], $courierIds, true);
+    }
+
+    /**
+     * @param int $courierId EuroParcel courier id
+     *
+     * @return array{name: string, logo: string}|null Name and logo URL of the courier's locker network
+     */
+    private function getLockerNetwork($courierId)
+    {
+        if (!isset(self::LOCKER_NETWORKS[(int) $courierId])) {
+            return null;
+        }
+
+        $network = self::LOCKER_NETWORKS[(int) $courierId];
+
+        return ['name' => $network['name'], 'logo' => $this->_path . 'views/img/' . $network['logo']];
+    }
+
+    /**
+     * @return array<int, array{name: string, logo: string}> Every locker network, by EuroParcel courier id
+     */
+    private function getLockerNetworks()
+    {
+        $networks = [];
+
+        foreach (array_keys(self::LOCKER_NETWORKS) as $courierId) {
+            $networks[$courierId] = $this->getLockerNetwork($courierId);
+        }
+
+        return $networks;
     }
 
     /**
