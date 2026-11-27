@@ -19,7 +19,7 @@ if (!defined('_PS_VERSION_')) {
  *
  * @return bool
  */
-function upgrade_module_2_1_0($module)
+function upgrade_module_2_5_0($module)
 {
     $names = [
         'EuroParcel - Home Delivery' => 'eAWB - Home Delivery',

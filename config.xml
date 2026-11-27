@@ -2,7 +2,7 @@
 <module>
     <name>europarcel</name>
     <displayName><![CDATA[eAWB]]></displayName>
-    <version><![CDATA[2.1.0]]></version>
+    <version><![CDATA[2.5.0]]></version>
     <description><![CDATA[Create and manage the eAWB carriers for home delivery and locker pickup]]></description>
     <author><![CDATA[eAWB]]></author>
     <tab><![CDATA[shipping_logistics]]></tab>

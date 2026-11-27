@@ -1,6 +1,6 @@
 # eAWB - PrestaShop Shipping Module
 
-![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)
+![Version](https://img.shields.io/badge/version-2.5.0-blue.svg)
 ![PrestaShop](https://img.shields.io/badge/PrestaShop-1.7%20%7C%208.x%20%7C%209.2-brightgreen.svg)
 ![License](https://img.shields.io/badge/license-AFL--3.0-orange.svg)
 
@@ -408,7 +408,7 @@ europarcel/
 ├── upgrade/
 │   ├── index.php
 │   ├── upgrade-2.0.0.php       # Puts the new logo on carriers created by earlier versions
-│   └── upgrade-2.1.0.php       # eAWB carrier names and logo, locker on the order details page
+│   └── upgrade-2.5.0.php       # eAWB carrier names and logo, locker on the order details page
 │
 └── views/
     ├── index.php
@@ -689,7 +689,7 @@ Full license text: http://opensource.org/licenses/afl-3.0.php
 
 ## 📊 Changelog
 
-### Version 2.1.0 (2026-11-26)
+### Version 2.5.0 (2026-11-26)
 
 **Compatibility**:
 - ✅ Tested up to PrestaShop 9.2.1 (PHP 8.1 to 8.5) and 8.2.9

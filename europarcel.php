@@ -7,7 +7,7 @@
  * @copyright Copyright (c) 2025 EuroParcel
  * @license   http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
  *
- * @version   2.1.0
+ * @version   2.5.0
  */
 if (!defined('_PS_VERSION_')) {
     exit;
@@ -110,7 +110,7 @@ class EuroParcel extends Module
     {
         $this->name = 'europarcel';
         $this->tab = 'shipping_logistics';
-        $this->version = '2.1.0';
+        $this->version = '2.5.0';
         $this->author = 'eAWB';
         $this->need_instance = 0;
         $this->ps_versions_compliancy = ['min' => '1.7', 'max' => '9.99.99'];

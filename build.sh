@@ -9,7 +9,7 @@ cd "$(dirname "$0")"
 
 # Set variables
 MODULE_NAME="europarcel"
-VERSION="2.1.0"
+VERSION="2.5.0"
 DESKTOP_PATH="$HOME/Desktop"
 OUTPUT_ZIP="${DESKTOP_PATH}/${MODULE_NAME}.zip"
 TEMP_DIR="/tmp/${MODULE_NAME}_build"
