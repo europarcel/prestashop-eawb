@@ -12,7 +12,7 @@ if (!defined('_PS_VERSION_')) {
 }
 
 /**
- * Move the carriers to the eAWB name and logo, and show the locker on the customer's order details.
+ * Move the carriers to the eAWB name and logo, keep each order's locker, and show it on the customer's order details.
  * A carrier name or logo the merchant changed stays.
  *
  * @param EuroParcel $module
@@ -60,5 +60,6 @@ function upgrade_module_2_5_0($module)
         }
     }
 
-    return $module->registerHook('displayOrderDetail', Shop::getShops(true, null, true));
+    return $module->installOrderLockerTable()
+        && $module->registerHook('displayOrderDetail', Shop::getShops(true, null, true));
 }

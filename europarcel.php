@@ -103,6 +103,7 @@ class EuroParcel extends Module
         1 => ['name' => 'Cargus Ship & Go', 'logo' => 'cargus-ship-go.webp'],
         2 => ['name' => 'DPD', 'logo' => 'dpd.webp'],
         3 => ['name' => 'FANbox', 'logo' => 'fanbox.webp'],
+        4 => ['name' => 'GLS', 'logo' => 'gls.webp'],
         6 => ['name' => 'easybox', 'logo' => 'easybox.webp'],
     ];
 
@@ -269,6 +270,7 @@ class EuroParcel extends Module
             }
 
             $this->saveOrderService($order, self::SERVICE_LOCKER, $locker['carrier_id'], $locker['id']);
+            $this->saveOrderLocker($order->id, $locker);
             $this->saveCustomerLocker($order->id_customer, $locker);
         } elseif ($this->isHomeCarrier($order->id_carrier)) {
             $service = $this->getDefaultHomeService();
@@ -473,7 +475,22 @@ class EuroParcel extends Module
         return $this->addColumnIfMissing('orders', 'europarcel_locker_id', 'INT UNSIGNED NULL DEFAULT NULL AFTER `id_carrier`')
             && $this->addColumnIfMissing('orders', 'europarcel_carrier_id', 'INT UNSIGNED NULL DEFAULT NULL AFTER `id_carrier`')
             && $this->addColumnIfMissing('orders', 'europarcel_service_id', 'INT UNSIGNED NULL DEFAULT NULL AFTER `europarcel_carrier_id`')
-            && $this->addColumnIfMissing('customer', 'europarcel_locker_data', 'TEXT NULL DEFAULT NULL');
+            && $this->addColumnIfMissing('customer', 'europarcel_locker_data', 'TEXT NULL DEFAULT NULL')
+            && $this->installOrderLockerTable();
+    }
+
+    /**
+     * The order's locker as the customer picked it, so its pages do not depend on EuroParcel answering.
+     * Kept on uninstall, like the columns.
+     *
+     * @return bool
+     */
+    public function installOrderLockerTable()
+    {
+        return Db::getInstance()->execute('CREATE TABLE IF NOT EXISTS `' . _DB_PREFIX_ . 'europarcel_order_locker` (
+            `id_order` INT UNSIGNED NOT NULL PRIMARY KEY,
+            `locker_data` TEXT NOT NULL
+        ) ENGINE=' . _MYSQL_ENGINE_ . ' DEFAULT CHARSET=utf8mb4');
     }
 
     /**
@@ -907,7 +924,8 @@ class EuroParcel extends Module
     }
 
     /**
-     * Name and address come from the customer's saved locker when it is the order's, else from EuroParcel.
+     * The locker saved on the order. An order placed before 2.5.0 takes it once from the customer's saved locker,
+     * else from EuroParcel, and keeps it; when neither can tell, only the id and network are shown.
      *
      * @param Order $order
      *
@@ -915,6 +933,12 @@ class EuroParcel extends Module
      */
     private function getOrderLocker(Order $order)
     {
+        $saved = $this->getSavedOrderLocker($order->id);
+
+        if ($saved) {
+            return $saved;
+        }
+
         $data = $this->getOrderServiceData($order->id);
         $lockerId = (int) $data['europarcel_locker_id'];
 
@@ -924,12 +948,51 @@ class EuroParcel extends Module
 
         $locker = $this->getCustomerLocker($order->id_customer);
 
-        if ($locker && $locker['id'] === $lockerId) {
+        if (!$locker || $locker['id'] !== $lockerId) {
+            $locker = $this->fetchLocker($lockerId);
+        }
+
+        if ($locker) {
+            $this->saveOrderLocker($order->id, $locker);
+
             return $locker;
         }
 
-        return $this->fetchLocker($lockerId)
-            ?: $this->normalizeLocker(['id' => $lockerId, 'carrier_id' => $data['europarcel_carrier_id']]);
+        return $this->normalizeLocker(['id' => $lockerId, 'carrier_id' => $data['europarcel_carrier_id']]);
+    }
+
+    /**
+     * @param int $idOrder
+     * @param Locker $locker
+     *
+     * @return bool
+     */
+    private function saveOrderLocker($idOrder, array $locker)
+    {
+        return Db::getInstance()->insert(
+            'europarcel_order_locker',
+            ['id_order' => (int) $idOrder, 'locker_data' => pSQL($this->encodeLocker($locker), true)],
+            false,
+            true,
+            Db::REPLACE
+        );
+    }
+
+    /**
+     * @param int $idOrder
+     *
+     * @return Locker|null
+     */
+    private function getSavedOrderLocker($idOrder)
+    {
+        $query = new DbQuery();
+        $query->select('locker_data')
+            ->from('europarcel_order_locker')
+            ->where('id_order = ' . (int) $idOrder);
+
+        $json = Db::getInstance()->getValue($query);
+
+        return $json ? $this->normalizeLocker(json_decode($json, true)) : null;
     }
 
     /**
@@ -939,7 +1002,10 @@ class EuroParcel extends Module
      */
     private function displayOrderLocker($order)
     {
-        $locker = $order instanceof Order && Validate::isLoadedObject($order) ? $this->getOrderLocker($order) : null;
+        // A carrier the merchant changed to home delivery keeps the locker id on the order; it is not shown then.
+        $locker = $order instanceof Order && Validate::isLoadedObject($order) && $this->isLockerCarrier($order->id_carrier)
+            ? $this->getOrderLocker($order)
+            : null;
 
         if (!$locker) {
             return '';
